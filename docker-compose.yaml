@@ -1,0 +1,40 @@
+version: '3'
+networks:
+  net:
+    driver: bridge
+services:
+  cert-gen:
+    image: openquantumsafe/openssl3
+    volumes:
+      - ./certs:/certs
+      - ./openssl.cnf:/etc/ssl/openssl.cnf
+    command: |
+      openssl req -new -newkey rsa:2048 -sha256 -days 365 -nodes -x509 -keyout /certs/serverkey.pem -out /certs/servercert.pem -subj '/O=Chroma/C=US' -config /etc/ssl/openssl.cnf
+    environment:
+      - CHROMA_DOMAIN=${CHROMA_DOMAIN:-"localhost"}
+  envoy:
+    image: bitnami/envoy
+    volumes:
+      - ./envoy.yaml:/opt/bitnami/envoy/conf/envoy.yaml
+      - ./certs:/etc/envoy/certs
+      - ./wait-for-certs.sh:/usr/local/bin/wait-for-certs.sh
+    ports:
+      - "443:443"
+    networks:
+      - net
+    depends_on:
+      - cert-gen
+    entrypoint: |
+      sh -c "/usr/local/bin/wait-for-certs.sh && \
+      /opt/bitnami/envoy/bin/envoy -c /opt/bitnami/envoy/conf/envoy.yaml"
+  chromadb:
+    image: chromadb/chroma:latest
+    volumes:
+      - ./chromadb:/chroma/chroma
+    environment:
+      - IS_PERSISTENT=TRUE
+      - ANONYMIZED_TELEMETRY=${ANONYMIZED_TELEMETRY:-TRUE}
+    networks:
+      - net
+    depends_on:
+      - envoy
