@@ -32,17 +32,11 @@ be available at `https://localhost`.
 
 ## Testing
 
-```python
-import base64
-from chromadb import Settings, HttpClient
+This is also available in jupyter notebook format in `verify_connectivity.ipynb`.
 
-def test_client():
-    # basic auth - base64 encoded username:password
-    credentials = base64.b64encode(b'testuser:testpassword').decode('utf-8')
-    client = HttpClient(host='localhost', port=8443, ssl=True,headers={'Authorization': f'Basic {credentials}'})
-    client._session.verify = False #this is a workaround as Chroma client does not yet support self-signed certificates
-    print(client.heartbeat())
-    
-if __name__ == '__main__':
-    test_client()
+```python
+from chromadb import Settings
+import chromadb
+client = chromadb.HttpClient(host='https://localhost:443',ssl=True, settings=Settings(chroma_server_ssl_verify='./certs/servercert.pem'))
+print(client.heartbeat())
 ```
