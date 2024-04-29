@@ -7,7 +7,7 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.11"
-chromadb = {git = "https://github.com/amikos-tech/chroma-core.git", rev = "feature/ssl-verify"}
+chromadb = {git = "https://github.com/amikos-tech/chroma-core.git", rev = "main"}
 jupyter = "^1.0.0"
 
 
