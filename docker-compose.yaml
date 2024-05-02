@@ -27,6 +27,16 @@ services:
     entrypoint: |
       sh -c "/usr/local/bin/wait-for-certs.sh && \
       /opt/bitnami/envoy/bin/envoy -c /opt/bitnami/envoy/conf/envoy.yaml"
+  ollama-pull:
+    image: ollama/ollama:latest
+    command: |
+      ollama pull nomic-embed-text
+    volumes:
+      - ./ollama:/root/.ollama
+    networks:
+      - net
+    depends_on:
+      - envoy
   ollama:
     image: ollama/ollama:latest
     volumes:
@@ -34,7 +44,7 @@ services:
     networks:
       - net
     depends_on:
-      - envoy
+      - ollama-pull
   chromadb:
     image: chromadb/chroma:latest
     volumes:
